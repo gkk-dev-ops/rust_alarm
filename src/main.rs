@@ -18,9 +18,13 @@ const TIMES_UP_BANNER : &str = "┌───────────────
                                 │===============================│\n\
                                 └───────────────────────────────┘";
 
+const BELL_SOUND  : &str = "\x07";
+const CURSOR_TO_TOP  : &str = "\x1b[7A";
+const CURSOR_HIDE  : &str = "\x1b[?25l";
+
 // https://www.w3.org/TR/xml-entity-names/025.html
 fn draw_time_with_box_drawings(min:u32, sec:u32)-> () {
-    print!("\x1b[?25l"); // hide cursor
+    print!("{CURSOR_HIDE}");
     let time: String = min.to_string() + ":" + &sec.to_string();
     for row in &DIGITS {
         for c in time.chars() {
@@ -33,13 +37,13 @@ fn draw_time_with_box_drawings(min:u32, sec:u32)-> () {
         }
         println!();
     }
-    print!("\x1b[7A"); // move the cursor to the top, so msg is refreshed 
+    print!("{CURSOR_TO_TOP}"); 
 }
 
 fn end_alarm() -> () {
     println!("{TIMES_UP_BANNER}");
     loop{
-        print!("\x07");
+        print!("{BELL_SOUND}"); // play bell sound
     }
 }
 
