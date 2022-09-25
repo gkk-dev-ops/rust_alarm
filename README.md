@@ -1,9 +1,11 @@
 # rust_alarm
+
 CLI countdown timer
 
 ## Installation
+
 You'll need Rust already installed on your maschine, else you can find it [here](https://www.rust-lang.org/tools/install).
-Then clone repository and enter it in terminal 
+Then clone repository and enter it in terminal
 
 `cd rust_alarm`
 
