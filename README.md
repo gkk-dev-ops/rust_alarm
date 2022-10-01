@@ -1,4 +1,4 @@
-# rust_alarm
+# rust_alarm <img align="right" width="250" height="200" src="https://user-images.githubusercontent.com/93217666/193429686-968659a8-84d0-4598-8625-849e69b6b96e.png">
 
 CLI countdown timer
 
