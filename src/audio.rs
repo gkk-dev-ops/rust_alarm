@@ -1,13 +1,13 @@
 use anyhow::{bail, Context, Result};
 #[cfg(feature = "native-audio")]
 use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink, Source};
+#[cfg(feature = "native-audio")]
+use std::process::Command;
 use std::{
     collections::BTreeMap,
     fs,
     path::{Path, PathBuf},
 };
-#[cfg(feature = "native-audio")]
-use std::process::Command;
 #[cfg(feature = "native-audio")]
 use tempfile::NamedTempFile;
 
