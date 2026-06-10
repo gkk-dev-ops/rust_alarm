@@ -15,6 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs-site/package-lock.json
+      - run: npm ci --prefix docs-site
+      - run: npm test --prefix docs-site
+      - run: npm run docs:build --prefix docs-site
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

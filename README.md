@@ -2,6 +2,9 @@
 
 A responsive cross-platform countdown alarm for the terminal.
 
+Read the full documentation at
+[gkk-dev-ops.github.io/clck](https://gkk-dev-ops.github.io/clck/).
+
 Officially supported on macOS and Linux. Windows support is best-effort.
 
 ## Installation
