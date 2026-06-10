@@ -19,7 +19,7 @@ use std::{
     time::Duration,
 };
 
-pub const APP_NAME: &str = "alarm-clock";
+pub const APP_NAME: &str = "clck";
 
 pub fn run() -> Result<()> {
     let cli = cli::Cli::parse();
@@ -53,7 +53,7 @@ pub fn run() -> Result<()> {
             }
             cli::Command::Config { show, reset } => {
                 if reset {
-                    if Confirm::new("Reset saved alarm-clock settings?")
+                    if Confirm::new("Reset saved clck settings?")
                         .with_default(false)
                         .prompt()?
                     {
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn package_name_is_stable() {
-        assert_eq!(super::APP_NAME, "alarm-clock");
+        assert_eq!(super::APP_NAME, "clck");
     }
 
     #[test]

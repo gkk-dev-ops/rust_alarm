@@ -47,11 +47,11 @@ Tags created by the workflow do not trigger another release.
 
 | Rust target | Release artifact |
 | --- | --- |
-| `aarch64-apple-darwin` | `alarm-clock-vX.Y.Z-macos-aarch64.tar.gz` |
-| `x86_64-apple-darwin` | `alarm-clock-vX.Y.Z-macos-x86_64.tar.gz` |
-| `aarch64-unknown-linux-musl` | `alarm-clock-vX.Y.Z-linux-aarch64-musl.tar.gz` |
-| `x86_64-unknown-linux-musl` | `alarm-clock-vX.Y.Z-linux-x86_64-musl.tar.gz` |
-| `x86_64-pc-windows-msvc` | `alarm-clock-vX.Y.Z-windows-x86_64.zip` |
+| `aarch64-apple-darwin` | `clck-vX.Y.Z-macos-aarch64.tar.gz` |
+| `x86_64-apple-darwin` | `clck-vX.Y.Z-macos-x86_64.tar.gz` |
+| `aarch64-unknown-linux-musl` | `clck-vX.Y.Z-linux-aarch64-musl.tar.gz` |
+| `x86_64-unknown-linux-musl` | `clck-vX.Y.Z-linux-x86_64-musl.tar.gz` |
+| `x86_64-pc-windows-msvc` | `clck-vX.Y.Z-windows-x86_64.zip` |
 
 Every release also contains `SHA256SUMS`. Archives contain the executable and
 `README.md`, plus a plain-text license file if one exists.

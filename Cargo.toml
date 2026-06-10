@@ -1,9 +1,17 @@
 [package]
-name = "alarm-clock"
+name = "clck"
 version = "0.1.0"
 edition = "2021"
+description = "A responsive cross-platform countdown alarm for the terminal."
+license = "MIT"
+repository = "https://github.com/gkk-dev-ops/clck"
+readme = "README.md"
+keywords = ["alarm", "timer", "clock", "cli", "terminal"]
+categories = ["command-line-utilities"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "clck"
+path = "src/main.rs"
 
 [features]
 default = ["native-audio"]

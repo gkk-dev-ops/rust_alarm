@@ -1,34 +1,57 @@
-# alarm-clock
+# clck
 
 A responsive cross-platform countdown alarm for the terminal.
 
 Officially supported on macOS and Linux. Windows support is best-effort.
+
+## Installation
+
+Cargo/crates.io is the best option for Rust users:
+
+```bash
+cargo install clck --locked
+```
+
+GitHub Releases are best for users who want prebuilt binaries. Download the
+archive for your platform from the
+[latest GitHub Release](https://github.com/gkk-dev-ops/clck/releases/latest),
+verify it using `SHA256SUMS`, and place the extracted executable on `PATH`.
+
+Release archives use these names:
+
+- `clck-vX.Y.Z-macos-aarch64.tar.gz`
+- `clck-vX.Y.Z-macos-x86_64.tar.gz`
+- `clck-vX.Y.Z-linux-aarch64-musl.tar.gz`
+- `clck-vX.Y.Z-linux-x86_64-musl.tar.gz`
+- `clck-vX.Y.Z-windows-x86_64.zip`
+
+After either installation method, the command is `clck`.
 
 ## Usage
 
 Pass the countdown duration directly:
 
 ```bash
-alarm-clock 45s
-alarm-clock 10m
-alarm-clock 1h30m
-alarm-clock 1H30
-alarm-clock 01:30:00
+clck 45s
+clck 10m
+clck 1h30m
+clck 01:30:00
+clck --help
 ```
 
-`1H30` means one hour and thirty minutes. Duration units are
-case-insensitive.
+Compact durations such as `1H30` mean one hour and thirty minutes. Duration
+units are case-insensitive.
 
-Running `alarm-clock` without a duration opens guided interactive setup.
-Interactive font, sound, and notification choices can be saved as defaults.
+Running `clck` without a duration opens guided interactive setup. Interactive
+font, sound, and notification choices can be saved as defaults.
 
 ## Options
 
 ```bash
-alarm-clock 5m --sound ~/Music/alarm.mp3
-alarm-clock 5m --sound ~/Movies/alarm.mp4
-alarm-clock 5m --font banner
-alarm-clock 5m --no-notification
+clck 5m --sound ~/Music/alarm.mp3
+clck 5m --sound ~/Movies/alarm.mp4
+clck 5m --font banner
+clck 5m --no-notification
 ```
 
 MP3, WAV, FLAC, OGG, and AIFF play natively. Other formats, including MP4,
@@ -41,11 +64,11 @@ sound is available, the terminal bell is used.
 ## Commands
 
 ```bash
-alarm-clock fonts
-alarm-clock sounds
-alarm-clock config --show
-alarm-clock config --reset
-alarm-clock --help
+clck fonts
+clck sounds
+clck config --show
+clck config --reset
+clck --help
 ```
 
 Configuration is stored in the platform-standard application config directory.
@@ -68,4 +91,5 @@ cargo clippy --all-targets -- -D warnings
 cargo build --release
 ```
 
-See [docs/manual-testing.md](docs/manual-testing.md) for platform smoke tests.
+See [docs/manual-testing.md](docs/manual-testing.md) for platform smoke tests
+and [docs/releases.md](docs/releases.md) for GitHub Release operations.

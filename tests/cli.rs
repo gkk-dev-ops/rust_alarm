@@ -3,7 +3,7 @@ use predicates::str::contains;
 
 #[test]
 fn help_lists_duration_examples() {
-    Command::cargo_bin("alarm-clock")
+    Command::cargo_bin("clck")
         .unwrap()
         .arg("--help")
         .assert()
@@ -14,7 +14,7 @@ fn help_lists_duration_examples() {
 
 #[test]
 fn help_lists_scheduling_commands() {
-    Command::cargo_bin("alarm-clock")
+    Command::cargo_bin("clck")
         .unwrap()
         .arg("--help")
         .assert()
@@ -25,7 +25,7 @@ fn help_lists_scheduling_commands() {
 
 #[test]
 fn piped_text_without_terminal_never_starts_alarm() {
-    Command::cargo_bin("alarm-clock")
+    Command::cargo_bin("clck")
         .unwrap()
         .arg("from-text")
         .write_stdin("Meet tomorrow at 9am")
@@ -37,7 +37,7 @@ fn piped_text_without_terminal_never_starts_alarm() {
 
 #[test]
 fn vague_piped_text_reports_accepted_examples() {
-    Command::cargo_bin("alarm-clock")
+    Command::cargo_bin("clck")
         .unwrap()
         .arg("from-text")
         .write_stdin("Let's talk later after lunch")

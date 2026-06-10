@@ -99,18 +99,19 @@ After the first automatic release:
 3. Download the current macOS archive and `SHA256SUMS`.
 4. Filter its entry from `SHA256SUMS` and verify it with
    `shasum -a 256 -c -`.
-5. Extract the archive and confirm it contains `alarm-clock` and `README.md`.
-6. Run `./alarm-clock --help`.
+5. Extract the archive and confirm it contains `clck`, `README.md`, and
+   `LICENSE`.
+6. Run `./clck --help`.
 7. Confirm the GitHub tag and release use the same `vMAJOR.MINOR.PATCH`.
 8. Manually rebuild that existing tag and confirm artifacts are replaced rather
    than a duplicate release being created.
 
 On Linux, filter the appropriate archive entry from `SHA256SUMS`, verify it
 with `sha256sum -c -`, extract it, install the executable on `PATH`, and run
-`alarm-clock --help`.
+`clck --help`.
 
 On Windows, compare `Get-FileHash -Algorithm SHA256` with `SHA256SUMS`, extract
-the ZIP, add its directory to `PATH`, and run `alarm-clock.exe --help`.
+the ZIP, add its directory to `PATH`, and run `clck.exe --help`.
 
 ### Release Automation Local Validation
 
@@ -122,8 +123,8 @@ Tested on macOS on June 10, 2026:
   archives.
 - `bash -n scripts/*.sh` and actionlint passed.
 - The exact CI formatting, test, Clippy, and release-build commands passed.
-- A local macOS x86_64 release archive contained `alarm-clock` and `README.md`,
-  and `SHA256SUMS` was generated for it.
+- A local macOS x86_64 release archive contained `clck` and `README.md`, and
+  `SHA256SUMS` was generated for it.
 
 After merge, GitHub-hosted validation must confirm the CI triggers, tag-push
 permission, all five runner builds, generated release notes, latest-release

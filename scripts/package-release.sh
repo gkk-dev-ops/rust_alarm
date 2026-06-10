@@ -10,11 +10,11 @@ output_dir=${4:?usage: package-release.sh TAG TARGET EXECUTABLE OUTPUT_DIR}
   { echo "invalid release tag: $tag" >&2; exit 1; }
 
 case "$target" in
-  aarch64-apple-darwin) suffix=macos-aarch64; executable_name=alarm-clock; archive=tar ;;
-  x86_64-apple-darwin) suffix=macos-x86_64; executable_name=alarm-clock; archive=tar ;;
-  aarch64-unknown-linux-musl) suffix=linux-aarch64-musl; executable_name=alarm-clock; archive=tar ;;
-  x86_64-unknown-linux-musl) suffix=linux-x86_64-musl; executable_name=alarm-clock; archive=tar ;;
-  x86_64-pc-windows-msvc) suffix=windows-x86_64; executable_name=alarm-clock.exe; archive=zip ;;
+  aarch64-apple-darwin) suffix=macos-aarch64; executable_name=clck; archive=tar ;;
+  x86_64-apple-darwin) suffix=macos-x86_64; executable_name=clck; archive=tar ;;
+  aarch64-unknown-linux-musl) suffix=linux-aarch64-musl; executable_name=clck; archive=tar ;;
+  x86_64-unknown-linux-musl) suffix=linux-x86_64-musl; executable_name=clck; archive=tar ;;
+  x86_64-pc-windows-msvc) suffix=windows-x86_64; executable_name=clck.exe; archive=zip ;;
   *) echo "unsupported release target: $target" >&2; exit 1 ;;
 esac
 
@@ -34,7 +34,7 @@ for license in LICENSE LICENSE.txt LICENSE.md; do
   fi
 done
 
-name="alarm-clock-${tag}-${suffix}"
+name="clck-${tag}-${suffix}"
 if [[ "$archive" == tar ]]; then
   tar -C "$stage" -czf "$output_dir/${name}.tar.gz" "${entries[@]}"
 else

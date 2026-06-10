@@ -12,30 +12,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "alarm-clock"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "chrono",
- "chrono-tz",
- "clap",
- "crossterm",
- "ctrlc",
- "directories",
- "iana-time-zone",
- "inquire",
- "notify-rust",
- "predicates",
- "regex",
- "rodio",
- "serde",
- "tempfile",
- "thiserror 2.0.18",
- "toml",
-]
-
-[[package]]
 name = "alsa"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -439,6 +415,30 @@ name = "clap_lex"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
+
+[[package]]
+name = "clck"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "chrono",
+ "chrono-tz",
+ "clap",
+ "crossterm",
+ "ctrlc",
+ "directories",
+ "iana-time-zone",
+ "inquire",
+ "notify-rust",
+ "predicates",
+ "regex",
+ "rodio",
+ "serde",
+ "tempfile",
+ "thiserror 2.0.18",
+ "toml",
+]
 
 [[package]]
 name = "colorchoice"

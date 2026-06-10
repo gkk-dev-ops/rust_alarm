@@ -57,10 +57,9 @@ grep -Fq 'gh release upload' "$release"
 grep -Fq 'args: --locked --release --no-default-features' "$release"
 
 readme="$root/README.md"
-if grep -Fq 'https://github.com/gkk-dev-ops/clck/releases/latest' "$readme"; then
-  echo "README should not contain release installation instructions" >&2
-  exit 1
-fi
+grep -Fq 'cargo install clck --locked' "$readme"
+grep -Fq 'https://github.com/gkk-dev-ops/clck/releases/latest' "$readme"
+grep -Fq 'clck-vX.Y.Z-linux-x86_64-musl.tar.gz' "$readme"
 
 releases="$root/docs/releases.md"
 test -f "$releases"

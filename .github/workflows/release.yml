@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: alarm-clock-release
+  group: clck-release
   cancel-in-progress: false
 
 jobs:
@@ -71,23 +71,23 @@ jobs:
         include:
           - runner: macos-14
             target: aarch64-apple-darwin
-            executable: alarm-clock
+            executable: clck
             cross: false
           - runner: macos-14
             target: x86_64-apple-darwin
-            executable: alarm-clock
+            executable: clck
             cross: false
           - runner: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            executable: alarm-clock
+            executable: clck
             cross: true
           - runner: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            executable: alarm-clock
+            executable: clck
             cross: true
           - runner: windows-2022
             target: x86_64-pc-windows-msvc
-            executable: alarm-clock.exe
+            executable: clck.exe
             cross: false
     runs-on: ${{ matrix.runner }}
     steps:
@@ -142,16 +142,16 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           scripts/package-release.sh "$TAG" aarch64-apple-darwin \
-            raw/binary-aarch64-apple-darwin/alarm-clock dist
+            raw/binary-aarch64-apple-darwin/clck dist
           scripts/package-release.sh "$TAG" x86_64-apple-darwin \
-            raw/binary-x86_64-apple-darwin/alarm-clock dist
+            raw/binary-x86_64-apple-darwin/clck dist
           scripts/package-release.sh "$TAG" aarch64-unknown-linux-musl \
-            raw/binary-aarch64-unknown-linux-musl/alarm-clock dist
+            raw/binary-aarch64-unknown-linux-musl/clck dist
           scripts/package-release.sh "$TAG" x86_64-unknown-linux-musl \
-            raw/binary-x86_64-unknown-linux-musl/alarm-clock dist
+            raw/binary-x86_64-unknown-linux-musl/clck dist
           scripts/package-release.sh "$TAG" x86_64-pc-windows-msvc \
-            raw/binary-x86_64-pc-windows-msvc/alarm-clock.exe dist
-          (cd dist && sha256sum alarm-clock-* > SHA256SUMS)
+            raw/binary-x86_64-pc-windows-msvc/clck.exe dist
+          (cd dist && sha256sum clck-* > SHA256SUMS)
           test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 6
       - name: Create or replace GitHub Release artifacts
         run: |

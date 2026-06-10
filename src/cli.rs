@@ -16,10 +16,7 @@ use std::{
 use thiserror::Error;
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "alarm-clock",
-    about = "Responsive cross-platform countdown alarm"
-)]
+#[command(name = "clck", about = "Responsive cross-platform countdown alarm")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Command>,
@@ -355,12 +352,11 @@ mod tests {
 
     #[test]
     fn parses_scheduling_commands_with_existing_options() {
-        let cli =
-            Cli::try_parse_from(["alarm-clock", "at", "tomorrow at 9am", "--font", "box"]).unwrap();
+        let cli = Cli::try_parse_from(["clck", "at", "tomorrow at 9am", "--font", "box"]).unwrap();
         assert!(matches!(cli.command, Some(Command::At { .. })));
         assert_eq!(cli.font.as_deref(), Some("box"));
 
-        let cli = Cli::try_parse_from(["alarm-clock", "from-text", "--no-notification"]).unwrap();
+        let cli = Cli::try_parse_from(["clck", "from-text", "--no-notification"]).unwrap();
         assert!(matches!(cli.command, Some(Command::FromText)));
         assert!(cli.no_notification);
     }

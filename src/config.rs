@@ -41,7 +41,7 @@ pub struct Overrides {
 
 impl Config {
     pub fn path() -> Result<PathBuf> {
-        let directories = ProjectDirs::from("", "", "alarm-clock")
+        let directories = ProjectDirs::from("", "", "clck")
             .context("could not determine the platform configuration directory")?;
         Ok(directories.config_dir().join("config.toml"))
     }
