@@ -430,6 +430,7 @@ dependencies = [
  "directories",
  "iana-time-zone",
  "inquire",
+ "libc",
  "notify-rust",
  "predicates",
  "regex",

@@ -100,10 +100,10 @@ onBeforeUnmount(clearTimers);
       <span></span><span></span><span></span><strong>PowerShell</strong>
     </div>
     <div class="terminal-body">
-      <p><span class="prompt">PS&gt;</span> clck 10s</p>
-      <div aria-live="polite">
+      <p class="terminal-command"><span class="prompt">PS&gt;</span> clck 10s</p>
+      <div class="terminal-output" aria-live="polite">
         <p class="terminal-muted">{{ status }}</p>
-        <p class="timer-output">{{ formattedTime }}</p>
+        <output class="timer-output">{{ formattedTime }}</output>
       </div>
       <button class="terminal-action" type="button" @click="toggle">{{ buttonLabel }}</button>
     </div>

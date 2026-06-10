@@ -76,11 +76,20 @@ h3,
 }
 
 .terminal-body {
+  display: grid;
+  justify-items: start;
+  gap: 20px;
   padding: 20px;
 }
 
-.terminal-body p {
-  margin: 0 0 12px;
+.terminal-command,
+.terminal-muted {
+  margin: 0;
+}
+
+.terminal-output {
+  display: grid;
+  gap: 6px;
 }
 
 .prompt {
@@ -93,8 +102,9 @@ h3,
 }
 
 .timer-output {
+  display: block;
   color: #bfdbfe;
-  font-size: clamp(2.5rem, 10vw, 6rem);
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
   line-height: 1;
   letter-spacing: -0.08em;
 }

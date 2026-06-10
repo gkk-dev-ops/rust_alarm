@@ -15,6 +15,16 @@ describe("TerminalTimer", () => {
     vi.unstubAllGlobals();
   });
 
+  it("renders terminal content in a compact stacked order", () => {
+    const wrapper = mount(TerminalTimer);
+    const bodyChildren = wrapper.get(".terminal-body").element.children;
+
+    expect(bodyChildren[0]?.classList).toContain("terminal-command");
+    expect(bodyChildren[1]?.classList).toContain("terminal-output");
+    expect(bodyChildren[2]?.classList).toContain("terminal-action");
+    expect(wrapper.get("output.timer-output").text()).toBe("00:00:10");
+  });
+
   it("starts from ten seconds and counts down from an absolute end time", async () => {
     const wrapper = mount(TerminalTimer);
 
