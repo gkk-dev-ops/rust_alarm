@@ -1,28 +1,98 @@
-# rust_alarm <img align="right" width="250" height="200" src="https://user-images.githubusercontent.com/93217666/193429686-968659a8-84d0-4598-8625-849e69b6b96e.png">
+# clck
 
-CLI countdown timer
+A responsive cross-platform countdown alarm for the terminal.
+
+Read the full documentation at
+[gkk-dev-ops.github.io/clck](https://gkk-dev-ops.github.io/clck/).
+
+Officially supported on macOS and Linux. Windows support is best-effort.
 
 ## Installation
 
-You'll need Rust already installed on your maschine, else you can find it [here](https://www.rust-lang.org/tools/install).
-Then clone repository and enter it in terminal
+Cargo/crates.io is the best option for Rust users:
 
-`cd rust_alarm`
+```bash
+cargo install clck --locked
+```
 
-compile
+GitHub Releases are best for users who want prebuilt binaries. Download the
+archive for your platform from the
+[latest GitHub Release](https://github.com/gkk-dev-ops/clck/releases/latest),
+verify it using `SHA256SUMS`, and place the extracted executable on `PATH`.
 
-`cargo build`
+Release archives use these names:
 
-and install
+- `clck-vX.Y.Z-macos-aarch64.tar.gz`
+- `clck-vX.Y.Z-macos-x86_64.tar.gz`
+- `clck-vX.Y.Z-linux-aarch64-musl.tar.gz`
+- `clck-vX.Y.Z-linux-x86_64-musl.tar.gz`
+- `clck-vX.Y.Z-windows-x86_64.zip`
 
-`cargo install --path .`
+After either installation method, the command is `clck`.
 
 ## Usage
 
-Enter ammount of minutes and secondes you want to be reminded after.
+Pass the countdown duration directly:
 
-![image](https://user-images.githubusercontent.com/93217666/192119815-518d006f-dbcd-4cbe-8093-5093fc79ed4f.png)
+```bash
+clck 45s
+clck 10m
+clck 1h30m
+clck 01:30:00
+clck --help
+```
 
-And then close the script with CTR+C (it will play anoying bell sound untill you won't).
+Compact durations such as `1H30` mean one hour and thirty minutes. Duration
+units are case-insensitive.
 
-![image](https://user-images.githubusercontent.com/93217666/192119817-d3c0eaa4-f9ac-45d0-90e2-54b4b93d442a.png)
+Running `clck` without a duration opens guided interactive setup. Interactive
+font, sound, and notification choices can be saved as defaults.
+
+## Options
+
+```bash
+clck 5m --sound ~/Music/alarm.mp3
+clck 5m --sound ~/Movies/alarm.mp4
+clck 5m --font banner
+clck 5m --no-notification
+```
+
+MP3, WAV, FLAC, OGG, and AIFF play natively. Other formats, including MP4,
+require `ffmpeg` to be installed.
+
+The default sound is resolved by logical name from installed OS sounds.
+macOS defaults to `Glass`; Linux discovers freedesktop sound themes. If no
+sound is available, the terminal bell is used.
+
+## Commands
+
+```bash
+clck fonts
+clck sounds
+clck config --show
+clck config --reset
+clck --help
+```
+
+Configuration is stored in the platform-standard application config directory.
+Command-line options override saved defaults.
+
+## Controls
+
+- During countdown: `q`, `Esc`, or `Ctrl+C` cancels.
+- While ringing: any key dismisses the alarm.
+
+The timer selects the largest bundled ASCII font that fits and redraws when
+the terminal is resized. Terminal mode and cursor visibility are restored on
+normal exit, cancellation, dismissal, and errors.
+
+## Development
+
+```bash
+cargo test
+cargo clippy --all-targets -- -D warnings
+cargo build --release
+```
+
+See [docs/manual-testing.md](docs/manual-testing.md) for platform smoke tests
+and [docs/releases.md](docs/releases.md) for GitHub Release operations.

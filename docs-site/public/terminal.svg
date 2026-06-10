@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Terminal">
+  <rect x="4" y="8" width="56" height="48" rx="6" fill="#0b1220" stroke="#3b82f6" stroke-width="4"/>
+  <path d="m16 23 9 9-9 9M31 41h16" fill="none" stroke="#93c5fd" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,163 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing vMAJOR.MINOR.PATCH tag to rebuild
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: clck-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'master')
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.prepare.outputs.skip }}
+      tag: ${{ steps.prepare.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || 'master' }}
+      - id: prepare
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_TAG: ${{ inputs.tag }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$MANUAL_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+              { echo "invalid release tag: $MANUAL_TAG" >&2; exit 1; }
+            git rev-parse --verify "refs/tags/$MANUAL_TAG" >/dev/null ||
+              { echo "release tag does not exist: $MANUAL_TAG" >&2; exit 1; }
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "tag=$MANUAL_TAG" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git show -s --format=%B "$HEAD_SHA" > "$RUNNER_TEMP/message"
+          git tag --list > "$RUNNER_TEMP/tags"
+          result=$(scripts/release-version.sh "$RUNNER_TEMP/message" "$RUNNER_TEMP/tags")
+          echo "$result" >> "$GITHUB_OUTPUT"
+          grep -qx 'skip=true' <<< "$result" && exit 0
+          tag=$(sed -n 's/^tag=//p' <<< "$result")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$tag" "$HEAD_SHA"
+          git push origin "$tag"
+
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.skip == 'false'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            target: aarch64-apple-darwin
+            executable: clck
+            cross: false
+          - runner: macos-14
+            target: x86_64-apple-darwin
+            executable: clck
+            cross: false
+          - runner: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            executable: clck
+            cross: true
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            executable: clck
+            cross: true
+          - runner: windows-2022
+            target: x86_64-pc-windows-msvc
+            executable: clck.exe
+            cross: false
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.target }}
+      - name: Build Linux target
+        if: matrix.cross
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: build
+          target: ${{ matrix.target }}
+          args: --locked --release --no-default-features
+      - name: Build native or Apple target
+        if: matrix.cross == false
+        run: cargo build --locked --release --target ${{ matrix.target }}
+      - name: Stage executable
+        shell: bash
+        run: |
+          mkdir -p staged
+          cp "target/${{ matrix.target }}/release/${{ matrix.executable }}" staged/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: staged/${{ matrix.executable }}
+          if-no-files-found: error
+
+  publish:
+    needs: [prepare, build]
+    if: needs.prepare.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.prepare.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: raw
+          merge-multiple: false
+      - name: Package release archives
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          scripts/package-release.sh "$TAG" aarch64-apple-darwin \
+            raw/binary-aarch64-apple-darwin/clck dist
+          scripts/package-release.sh "$TAG" x86_64-apple-darwin \
+            raw/binary-x86_64-apple-darwin/clck dist
+          scripts/package-release.sh "$TAG" aarch64-unknown-linux-musl \
+            raw/binary-aarch64-unknown-linux-musl/clck dist
+          scripts/package-release.sh "$TAG" x86_64-unknown-linux-musl \
+            raw/binary-x86_64-unknown-linux-musl/clck dist
+          scripts/package-release.sh "$TAG" x86_64-pc-windows-msvc \
+            raw/binary-x86_64-pc-windows-msvc/clck.exe dist
+          (cd dist && sha256sum clck-* > SHA256SUMS)
+          test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 6
+      - name: Create or replace GitHub Release artifacts
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --generate-notes --title "$TAG"
+          fi
