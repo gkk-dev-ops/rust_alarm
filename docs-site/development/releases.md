@@ -57,9 +57,9 @@ can push tags and publish releases. No external secrets are required.
 
 ## Release Verification
 
-After publishing, open the
-[latest release](https://github.com/gkk-dev-ops/clck/releases/latest) and
-confirm all five archives and `SHA256SUMS` are present.
+After publishing, open
+[GitHub Releases](https://github.com/gkk-dev-ops/clck/releases) and confirm all
+five archives and `SHA256SUMS` are present.
 
 ## Failure Recovery
 

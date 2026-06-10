@@ -12,6 +12,8 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/installation" },
       { text: "Reference", link: "/reference/commands" },
+      { text: "crates.io", link: "https://crates.io/crates/clck" },
+      { text: "Releases", link: "https://github.com/gkk-dev-ops/clck/releases" },
       { text: "GitHub", link: "https://github.com/gkk-dev-ops/clck" },
     ],
     sidebar: {

@@ -4,7 +4,8 @@
 
 ## Cargo
 
-Rust users can install the current published version from crates.io:
+Rust users can install the current published version from
+[crates.io](https://crates.io/crates/clck):
 
 ```bash
 cargo install clck --locked
@@ -15,8 +16,8 @@ After installation, run `clck --help` to verify that the executable is on
 
 ## GitHub Releases
 
-Prebuilt binaries are published on the
-[latest GitHub Release](https://github.com/gkk-dev-ops/clck/releases/latest).
+Prebuilt binaries are published on
+[GitHub Releases](https://github.com/gkk-dev-ops/clck/releases).
 Download the archive for your platform:
 
 | Platform | Archive |

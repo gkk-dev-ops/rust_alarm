@@ -73,7 +73,15 @@ grep -Fq '[skip release]' "$releases"
 grep -Fq 'workflow_dispatch' "$releases"
 grep -Fq 'contents: write' "$releases"
 grep -Fq 'gh workflow run Release' "$releases"
-grep -Fq 'releases/latest' "$releases"
+grep -Fq 'https://github.com/gkk-dev-ops/clck/releases' "$releases"
 grep -Fq 'SHA256SUMS' "$releases"
+
+docs_config="$root/docs-site/.vitepress/config.mts"
+grep -Fq '{ text: "crates.io", link: "https://crates.io/crates/clck" }' "$docs_config"
+grep -Fq '{ text: "Releases", link: "https://github.com/gkk-dev-ops/clck/releases" }' "$docs_config"
+
+installation="$root/docs-site/guide/installation.md"
+grep -Fq '[crates.io](https://crates.io/crates/clck)' "$installation"
+grep -Fq 'https://github.com/gkk-dev-ops/clck/releases)' "$installation"
 
 echo "release-version tests passed"
