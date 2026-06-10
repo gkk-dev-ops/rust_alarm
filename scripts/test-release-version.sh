@@ -38,6 +38,8 @@ assert_output $'skip=true' calculate 'docs: no release [SKIP RELEASE]' v2.0.4
 ci="$root/.github/workflows/ci.yml"
 test -f "$ci"
 grep -Fq 'contents: read' "$ci"
+grep -Fq 'libasound2-dev' "$ci"
+grep -Fq 'pkg-config' "$ci"
 grep -Fq 'cargo test --locked' "$ci"
 grep -Fq 'cargo clippy --locked --all-targets -- -D warnings' "$ci"
 
