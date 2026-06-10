@@ -11,4 +11,6 @@ version=${tag#v}
 perl -0pi -e \
   's/(\[package\][^\[]*\nversion = ")[^"]+(")/${1}'"$version"'${2}/' \
   Cargo.toml
-cargo update --offline --package clck
+perl -0pi -e \
+  's/(\[\[package\]\]\nname = "clck"\nversion = ")[^"]+(")/${1}'"$version"'${2}/' \
+  Cargo.lock
