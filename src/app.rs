@@ -20,6 +20,7 @@ pub struct AlarmRequest {
     pub sound_name: String,
     pub sound: ResolvedSound,
     pub notification: bool,
+    pub target: Option<String>,
 }
 
 pub fn run_alarm(request: AlarmRequest) -> Result<()> {
@@ -34,7 +35,12 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
         let remaining = timer.remaining(Instant::now());
         let current_second = remaining.as_secs() + u64::from(remaining.subsec_nanos() > 0);
         if displayed_second != Some(current_second) {
-            terminal.render_countdown(remaining, &request.font, &request.sound_name)?;
+            terminal.render_countdown(
+                remaining,
+                &request.font,
+                &request.sound_name,
+                request.target.as_deref(),
+            )?;
             displayed_second = Some(current_second);
         }
         if timer.is_finished(Instant::now()) {
@@ -51,9 +57,9 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
     }
 
     if request.notification {
-        let _ = notification::notify_time_up();
+        let _ = notification::notify_time_up(request.target.as_deref());
     }
-    terminal.render_ringing()?;
+    terminal.render_ringing(request.target.as_deref())?;
     let player = AlarmPlayer::start(&request.sound)?;
     let mut last_bell = Instant::now();
     loop {

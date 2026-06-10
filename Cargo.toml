@@ -7,12 +7,16 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
+chrono = { version = "0.4", features = ["clock"] }
+chrono-tz = "0.10"
 clap = { version = "4", features = ["derive"] }
 crossterm = "0.29"
 ctrlc = "3"
 directories = "6"
+iana-time-zone = "0.1"
 inquire = "0.9"
 notify-rust = "4"
+regex = "1"
 rodio = { version = "0.21", features = ["playback", "symphonia-all"] }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"

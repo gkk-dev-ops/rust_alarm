@@ -13,6 +13,11 @@ cargo run
 cargo run -- fonts
 cargo run -- sounds
 cargo run -- config --show
+cargo run -- at 2:50pm
+cargo run -- at "tomorrow at 9am"
+cargo run -- from-text
+printf 'Meet tomorrow at 9am\n' | cargo run -- from-text
+printf 'Choose June 12 at 09:00 or June 12 at 14:30\n' | cargo run -- from-text
 ```
 
 Verify:
@@ -26,6 +31,18 @@ Verify:
 - Missing custom files fail before countdown.
 - MP4 reports a useful error when FFmpeg is unavailable.
 - The interactive fallback validates duration and can save defaults.
+- Every scheduled target displays its local date, time, UTC offset, and time
+  zone before confirmation.
+- Rejecting confirmation exits without starting a countdown.
+- Past, nonexistent DST, and ambiguous DST targets are rejected rather than
+  guessed.
+- Interactive multiline input ends on a single `.` line.
+- Multiple text candidates require explicit selection.
+- Piped text uses a controlling terminal for selection and confirmation when
+  available.
+- Piped text without a controlling terminal prints candidates and exits
+  non-zero.
+- Scheduled countdowns and time-up notifications include the confirmed target.
 
 ## macOS Smoke Test
 
@@ -41,6 +58,24 @@ Tested on June 10, 2026:
 
 Notification display, custom MP3/MP4 playback, and interactive saved settings
 still require manual confirmation in a normal user terminal session.
+
+### Scheduling Smoke Test
+
+Tested on macOS in the `Europe/Warsaw` time zone on June 10, 2026:
+
+- `cargo run -- at "tomorrow at 9am"` resolved the complete local target,
+  required confirmation, and exited without starting when answered `no`.
+- `cargo run -- at later` rejected the vague expression, accepted a replacement
+  expression, displayed its resolved target, and required confirmation.
+- Interactive `cargo run -- from-text` accepted multiline input ending with
+  `.`, displayed two candidates, required explicit selection, and exited
+  without starting when confirmation was rejected.
+- Piped one- and two-candidate text printed resolved candidates and exited
+  non-zero when no controlling terminal was available.
+- Piped vague text printed accepted examples and exited non-zero.
+
+Starting a scheduled countdown through expiry, checking scheduled notification
+text, and smoke testing scheduling on Linux still require manual confirmation.
 
 ## Linux Smoke Test
 

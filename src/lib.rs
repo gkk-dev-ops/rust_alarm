@@ -5,21 +5,35 @@ pub mod config;
 pub mod display;
 pub mod fonts;
 pub mod notification;
+pub mod schedule;
 pub mod timer;
+
+use anyhow::{bail, Context, Result};
+use chrono::Local;
+use clap::Parser;
+use config::{Config, Overrides, SoundSetting};
+use inquire::Confirm;
+use schedule::Candidate;
+use std::{
+    io::{BufRead, BufReader, Write},
+    time::Duration,
+};
 
 pub const APP_NAME: &str = "alarm-clock";
 
-pub fn run() -> anyhow::Result<()> {
-    use anyhow::{bail, Context};
-    use clap::Parser;
-    use config::{Config, Overrides, SoundSetting};
-    use inquire::Confirm;
-
+pub fn run() -> Result<()> {
     let cli = cli::Cli::parse();
     let config = Config::load()?;
+    let command_config = config.resolve(Overrides {
+        font: cli.font.clone(),
+        notification: cli.no_notification.then_some(false),
+        sound: cli.sound.clone().map(SoundSetting::File),
+    });
 
     if let Some(command) = cli.command {
         match command {
+            cli::Command::At { value } => return run_direct_schedule(value, command_config),
+            cli::Command::FromText => return run_text_schedule(command_config),
             cli::Command::Fonts => {
                 let catalog = fonts::FontCatalog::default();
                 for name in catalog.names() {
@@ -59,12 +73,7 @@ pub fn run() -> anyhow::Result<()> {
 
     let (duration, effective) = if let Some(duration) = cli.duration {
         let duration = cli::parse_duration(&duration)?;
-        let effective = config.resolve(Overrides {
-            font: cli.font,
-            notification: cli.no_notification.then_some(false),
-            sound: cli.sound.map(SoundSetting::File),
-        });
-        (duration, effective)
+        (duration, command_config)
     } else {
         let answers = cli::prompt_for_alarm(&config)?;
         let effective = Config {
@@ -78,6 +87,106 @@ pub fn run() -> anyhow::Result<()> {
         (answers.duration, effective)
     };
 
+    app::run_alarm(build_alarm_request(duration, effective, None)?).context("alarm failed")
+}
+
+fn run_direct_schedule(mut expression: String, effective: Config) -> Result<()> {
+    let Some(mut terminal) = cli::open_controlling_terminal() else {
+        let candidate = schedule::parse_direct(&expression)?;
+        bail!(
+            "confirmation is required before starting an alarm; detected candidate: {} -> {}",
+            candidate.source,
+            candidate.display_target()
+        );
+    };
+
+    let candidate = loop {
+        match schedule::parse_direct(&expression) {
+            Ok(candidate) => break candidate,
+            Err(error) => {
+                writeln!(terminal.writer, "{error}")?;
+                write!(terminal.writer, "Enter another date and time: ")?;
+                terminal.writer.flush()?;
+                expression.clear();
+                if terminal.reader.read_line(&mut expression)? == 0 {
+                    bail!("date and time input closed");
+                }
+            }
+        }
+    };
+    if !cli::confirm_candidate(&candidate, &mut terminal.reader, &mut terminal.writer)? {
+        return Ok(());
+    }
+    drop(terminal);
+    start_scheduled_alarm(candidate, effective)
+}
+
+fn run_text_schedule(effective: Config) -> Result<()> {
+    if cli::stdin_is_interactive() {
+        let stdin = std::io::stdin();
+        let mut reader = stdin.lock();
+        let mut writer = std::io::stdout();
+        loop {
+            let text = cli::read_text_source(&mut reader, &mut writer, true)?;
+            let candidates = schedule::extract_candidates(&text)?;
+            if candidates.is_empty() {
+                writeln!(
+                    writer,
+                    "No explicit date and time found; try `2:50pm`, `tomorrow at 9am`, or `June 12 at 09:00`."
+                )?;
+                continue;
+            }
+            let selected = cli::select_candidate(&candidates, &mut reader, &mut writer)?;
+            let candidate = candidates[selected].clone();
+            if !cli::confirm_candidate(&candidate, &mut reader, &mut writer)? {
+                return Ok(());
+            }
+            return start_scheduled_alarm(candidate, effective);
+        }
+    }
+
+    let stdin = std::io::stdin();
+    let mut reader = BufReader::new(stdin.lock());
+    let mut sink = std::io::sink();
+    let text = cli::read_text_source(&mut reader, &mut sink, false)?;
+    let candidates = schedule::extract_candidates(&text)?;
+    if candidates.is_empty() {
+        bail!(
+            "no explicit date and time found; try `2:50pm`, `tomorrow at 9am`, or `June 12 at 09:00`"
+        );
+    }
+    let Some(mut terminal) = cli::open_controlling_terminal() else {
+        let detected = candidates
+            .iter()
+            .map(|candidate| format!("{} -> {}", candidate.source, candidate.display_target()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        bail!("confirmation is required before starting an alarm; rerun interactively\n{detected}");
+    };
+    let selected = cli::select_candidate(&candidates, &mut terminal.reader, &mut terminal.writer)?;
+    let candidate = candidates[selected].clone();
+    if !cli::confirm_candidate(&candidate, &mut terminal.reader, &mut terminal.writer)? {
+        return Ok(());
+    }
+    drop(terminal);
+    start_scheduled_alarm(candidate, effective)
+}
+
+fn start_scheduled_alarm(candidate: Candidate, effective: Config) -> Result<()> {
+    let duration = schedule::duration_until(Local::now().fixed_offset(), candidate.target)?;
+    app::run_alarm(build_alarm_request(
+        duration,
+        effective,
+        Some(candidate.display_target()),
+    )?)
+    .context("alarm failed")
+}
+
+fn build_alarm_request(
+    duration: Duration,
+    effective: Config,
+    target: Option<String>,
+) -> Result<app::AlarmRequest> {
     let (sound_name, sound) = match &effective.sound {
         SoundSetting::System(name) => (name.clone(), audio::resolve_system_sound(name)?),
         SoundSetting::File(path) => (
@@ -93,20 +202,38 @@ pub fn run() -> anyhow::Result<()> {
         bail!("duration must be greater than zero");
     }
 
-    app::run_alarm(app::AlarmRequest {
+    Ok(app::AlarmRequest {
         duration,
         font: effective.font,
         sound_name,
         sound,
         notification: effective.notification,
+        target,
     })
-    .context("alarm failed")
 }
 
 #[cfg(test)]
 mod tests {
+    use super::build_alarm_request;
+    use crate::config::Config;
+    use std::time::Duration;
+
     #[test]
     fn package_name_is_stable() {
         assert_eq!(super::APP_NAME, "alarm-clock");
+    }
+
+    #[test]
+    fn scheduled_request_keeps_target_metadata() {
+        let request = build_alarm_request(
+            Duration::from_secs(60),
+            Config::default(),
+            Some("2026-06-11 09:00:00 -04:00 (America/New_York)".into()),
+        )
+        .unwrap();
+        assert_eq!(
+            request.target.as_deref(),
+            Some("2026-06-11 09:00:00 -04:00 (America/New_York)")
+        );
     }
 }

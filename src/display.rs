@@ -59,6 +59,7 @@ impl TerminalSession {
         remaining: Duration,
         preferred_font: &str,
         sound: &str,
+        target: Option<&str>,
     ) -> Result<()> {
         let (width, height) = terminal::size()?;
         let text = format_duration(remaining);
@@ -68,17 +69,23 @@ impl TerminalSession {
             .largest_fit_preferring(preferred_font, &text, available)
             .map(|font| font.render(&text))
             .unwrap_or_else(|| vec![text]);
-        render_lines(
-            &lines,
-            Some(&format!("Sound: {sound} | q/Esc/Ctrl+C to cancel")),
-        )
+        let full_status = countdown_status(sound, target);
+        let compact_status = countdown_status(sound, None);
+        let status = if full_status.chars().count() <= usize::from(width) {
+            Some(full_status.as_str())
+        } else if compact_status.chars().count() <= usize::from(width) {
+            Some(compact_status.as_str())
+        } else {
+            None
+        };
+        render_lines(&lines, status)
     }
 
-    pub fn render_ringing(&self) -> Result<()> {
-        render_lines(
-            &["TIME IS UP!".to_owned()],
-            Some("Press any key to dismiss"),
-        )
+    pub fn render_ringing(&self, target: Option<&str>) -> Result<()> {
+        let status = target
+            .map(|target| format!("Target: {target} | Press any key to dismiss"))
+            .unwrap_or_else(|| "Press any key to dismiss".to_owned());
+        render_lines(&["TIME IS UP!".to_owned()], Some(&status))
     }
 }
 
@@ -114,9 +121,18 @@ pub fn format_duration(duration: Duration) -> String {
     }
 }
 
+pub fn countdown_status(sound: &str, target: Option<&str>) -> String {
+    match target {
+        Some(target) => {
+            format!("Target: {target} | Sound: {sound} | q/Esc/Ctrl+C to cancel")
+        }
+        None => format!("Sound: {sound} | q/Esc/Ctrl+C to cancel"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{event_from_key, DisplayEvent};
+    use super::{countdown_status, event_from_key, DisplayEvent};
     use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
     #[test]
@@ -132,6 +148,18 @@ mod tests {
         assert_eq!(
             event_from_key(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE), true),
             DisplayEvent::Dismiss
+        );
+    }
+
+    #[test]
+    fn countdown_status_includes_optional_target() {
+        assert_eq!(
+            countdown_status("Glass", Some("2026-06-11 09:00 EDT")),
+            "Target: 2026-06-11 09:00 EDT | Sound: Glass | q/Esc/Ctrl+C to cancel"
+        );
+        assert_eq!(
+            countdown_status("Glass", None),
+            "Sound: Glass | q/Esc/Ctrl+C to cancel"
         );
     }
 }
