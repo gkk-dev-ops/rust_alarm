@@ -32,8 +32,10 @@ pub fn run() -> Result<()> {
 
     if let Some(command) = cli.command {
         match command {
-            cli::Command::At { value } => return run_direct_schedule(value, command_config),
-            cli::Command::FromText => return run_text_schedule(command_config),
+            cli::Command::At { value } => {
+                return run_direct_schedule(value, command_config, cli.title)
+            }
+            cli::Command::FromText => return run_text_schedule(command_config, cli.title),
             cli::Command::Fonts => {
                 let catalog = fonts::FontCatalog::default();
                 for name in catalog.names() {
@@ -71,9 +73,9 @@ pub fn run() -> Result<()> {
         return Ok(());
     }
 
-    let (duration, effective) = if let Some(duration) = cli.duration {
+    let (duration, effective, title) = if let Some(duration) = cli.duration {
         let duration = cli::parse_duration(&duration)?;
-        (duration, command_config)
+        (duration, command_config, cli.title)
     } else {
         let answers = cli::prompt_for_alarm(&config)?;
         let effective = Config {
@@ -84,13 +86,17 @@ pub fn run() -> Result<()> {
         if answers.save_defaults {
             effective.save()?;
         }
-        (answers.duration, effective)
+        (answers.duration, effective, answers.title)
     };
 
-    app::run_alarm(build_alarm_request(duration, effective, None)?).context("alarm failed")
+    app::run_alarm(build_alarm_request(duration, effective, None, title)?).context("alarm failed")
 }
 
-fn run_direct_schedule(mut expression: String, effective: Config) -> Result<()> {
+fn run_direct_schedule(
+    mut expression: String,
+    effective: Config,
+    title: Option<String>,
+) -> Result<()> {
     let Some(mut terminal) = cli::open_controlling_terminal() else {
         let candidate = schedule::parse_direct(&expression)?;
         bail!(
@@ -118,10 +124,10 @@ fn run_direct_schedule(mut expression: String, effective: Config) -> Result<()> 
         return Ok(());
     }
     drop(terminal);
-    start_scheduled_alarm(candidate, effective)
+    start_scheduled_alarm(candidate, effective, title)
 }
 
-fn run_text_schedule(effective: Config) -> Result<()> {
+fn run_text_schedule(effective: Config, title: Option<String>) -> Result<()> {
     if cli::stdin_is_interactive() {
         let stdin = std::io::stdin();
         let mut reader = stdin.lock();
@@ -141,7 +147,7 @@ fn run_text_schedule(effective: Config) -> Result<()> {
             if !cli::confirm_candidate(&candidate, &mut reader, &mut writer)? {
                 return Ok(());
             }
-            return start_scheduled_alarm(candidate, effective);
+            return start_scheduled_alarm(candidate, effective, title);
         }
     }
 
@@ -169,15 +175,20 @@ fn run_text_schedule(effective: Config) -> Result<()> {
         return Ok(());
     }
     drop(terminal);
-    start_scheduled_alarm(candidate, effective)
+    start_scheduled_alarm(candidate, effective, title)
 }
 
-fn start_scheduled_alarm(candidate: Candidate, effective: Config) -> Result<()> {
+fn start_scheduled_alarm(
+    candidate: Candidate,
+    effective: Config,
+    title: Option<String>,
+) -> Result<()> {
     let duration = schedule::duration_until(Local::now().fixed_offset(), candidate.target)?;
     app::run_alarm(build_alarm_request(
         duration,
         effective,
         Some(candidate.display_target()),
+        title,
     )?)
     .context("alarm failed")
 }
@@ -186,6 +197,7 @@ fn build_alarm_request(
     duration: Duration,
     effective: Config,
     target: Option<String>,
+    title: Option<String>,
 ) -> Result<app::AlarmRequest> {
     let (sound_name, sound) = match &effective.sound {
         SoundSetting::System(name) => (name.clone(), audio::resolve_system_sound(name)?),
@@ -204,6 +216,7 @@ fn build_alarm_request(
 
     Ok(app::AlarmRequest {
         duration,
+        title,
         font: effective.font,
         sound_name,
         sound,
@@ -229,11 +242,13 @@ mod tests {
             Duration::from_secs(60),
             Config::default(),
             Some("2026-06-11 09:00:00 -04:00 (America/New_York)".into()),
+            Some("Resuming".into()),
         )
         .unwrap();
         assert_eq!(
             request.target.as_deref(),
             Some("2026-06-11 09:00:00 -04:00 (America/New_York)")
         );
+        assert_eq!(request.title.as_deref(), Some("Resuming"));
     }
 }

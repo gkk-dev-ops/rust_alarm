@@ -16,6 +16,7 @@ use std::{
 #[derive(Clone, Debug)]
 pub struct AlarmRequest {
     pub duration: Duration,
+    pub title: Option<String>,
     pub font: String,
     pub sound_name: String,
     pub sound: ResolvedSound,
@@ -40,6 +41,7 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
                 &request.font,
                 &request.sound_name,
                 request.target.as_deref(),
+                request.title.as_deref(),
             )?;
             displayed_second = Some(current_second);
         }
@@ -57,9 +59,9 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
     }
 
     if request.notification {
-        let _ = notification::notify_time_up(request.target.as_deref());
+        let _ = notification::notify_time_up(request.target.as_deref(), request.title.as_deref());
     }
-    terminal.render_ringing(request.target.as_deref())?;
+    terminal.render_ringing(request.target.as_deref(), request.title.as_deref())?;
     let player = AlarmPlayer::start(&request.sound)?;
     let mut last_bell = Instant::now();
     loop {

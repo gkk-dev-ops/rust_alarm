@@ -31,6 +31,8 @@ pub struct Cli {
     pub font: Option<String>,
     #[arg(long, global = true)]
     pub no_notification: bool,
+    #[arg(long, short, global = true)]
+    pub title: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -179,6 +181,7 @@ pub fn open_controlling_terminal() -> Option<ControllingTerminal> {
 #[derive(Clone, Debug)]
 pub struct InteractiveAnswers {
     pub duration: String,
+    pub title: Option<String>,
     pub font: String,
     pub notification: bool,
     pub sound: SoundSetting,
@@ -188,6 +191,7 @@ pub struct InteractiveAnswers {
 #[derive(Clone, Debug)]
 pub struct ValidatedInteractiveAnswers {
     pub duration: Duration,
+    pub title: Option<String>,
     pub font: String,
     pub notification: bool,
     pub sound: SoundSetting,
@@ -198,6 +202,7 @@ impl InteractiveAnswers {
     pub fn validate(self) -> Result<ValidatedInteractiveAnswers> {
         Ok(ValidatedInteractiveAnswers {
             duration: parse_duration(&self.duration)?,
+            title: self.title,
             font: self.font,
             notification: self.notification,
             sound: self.sound,
@@ -210,6 +215,9 @@ pub fn prompt_for_alarm(config: &Config) -> Result<ValidatedInteractiveAnswers> 
     let duration = Text::new("Duration (for example 45, 1H30, 10m, or 45s):")
         .prompt()
         .context("interactive duration prompt was cancelled")?;
+    let title = Text::new("Title (optional):").prompt().ok();
+    let title = title.filter(|s| !s.trim().is_empty());
+
     let fonts: Vec<_> = FontCatalog::default().names().map(str::to_owned).collect();
     let default_font = fonts
         .iter()
@@ -233,6 +241,7 @@ pub fn prompt_for_alarm(config: &Config) -> Result<ValidatedInteractiveAnswers> 
         .prompt()?;
     InteractiveAnswers {
         duration,
+        title,
         font,
         notification,
         sound,
@@ -348,15 +357,15 @@ mod tests {
     fn validates_interactive_duration() {
         let answers = InteractiveAnswers {
             duration: "1H30".into(),
+            title: Some("Lunch".into()),
             font: "standard".into(),
             notification: true,
             sound: SoundSetting::System("Glass".into()),
             save_defaults: false,
         };
-        assert_eq!(
-            answers.validate().unwrap().duration,
-            Duration::from_secs(5_400)
-        );
+        let validated = answers.validate().unwrap();
+        assert_eq!(validated.duration, Duration::from_secs(5_400));
+        assert_eq!(validated.title.as_deref(), Some("Lunch"));
     }
 
     #[test]
@@ -368,6 +377,11 @@ mod tests {
         let cli = Cli::try_parse_from(["clck", "from-text", "--no-notification"]).unwrap();
         assert!(matches!(cli.command, Some(Command::FromText)));
         assert!(cli.no_notification);
+
+        let cli = Cli::try_parse_from(["clck", "10s", "--title", "Hello"]).unwrap();
+        assert_eq!(cli.title.as_deref(), Some("Hello"));
+        let cli = Cli::try_parse_from(["clck", "10s", "-t", "World"]).unwrap();
+        assert_eq!(cli.title.as_deref(), Some("World"));
     }
 
     #[test]

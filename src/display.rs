@@ -60,6 +60,7 @@ impl TerminalSession {
         preferred_font: &str,
         sound: &str,
         target: Option<&str>,
+        title: Option<&str>,
     ) -> Result<()> {
         let (width, height) = terminal::size()?;
         let text = format_duration(remaining);
@@ -69,22 +70,35 @@ impl TerminalSession {
             .largest_fit_preferring(preferred_font, &text, available)
             .map(|font| font.render(&text))
             .unwrap_or_else(|| vec![text]);
-        let full_status = countdown_status(sound, target);
-        let compact_status = countdown_status(sound, None);
+
+        let full_status = countdown_status(sound, target, title);
+        let title_status = countdown_status(sound, None, title);
+        let target_status = countdown_status(sound, target, None);
+        let compact_status = countdown_status(sound, None, None);
+
         let status = if full_status.chars().count() <= usize::from(width) {
-            Some(full_status.as_str())
+            Some(full_status)
+        } else if title_status.chars().count() <= usize::from(width) {
+            Some(title_status)
+        } else if target_status.chars().count() <= usize::from(width) {
+            Some(target_status)
         } else if compact_status.chars().count() <= usize::from(width) {
-            Some(compact_status.as_str())
+            Some(compact_status)
         } else {
             None
         };
-        render_lines(&lines, status)
+        render_lines(&lines, status.as_deref())
     }
 
-    pub fn render_ringing(&self, target: Option<&str>) -> Result<()> {
-        let status = target
-            .map(|target| format!("Target: {target} | Press any key to dismiss"))
-            .unwrap_or_else(|| "Press any key to dismiss".to_owned());
+    pub fn render_ringing(&self, target: Option<&str>, title: Option<&str>) -> Result<()> {
+        let status = match (title, target) {
+            (Some(title), Some(target)) => {
+                format!("Title: {title} | Target: {target} | Press any key to dismiss")
+            }
+            (Some(title), None) => format!("Title: {title} | Press any key to dismiss"),
+            (None, Some(target)) => format!("Target: {target} | Press any key to dismiss"),
+            (None, None) => "Press any key to dismiss".to_owned(),
+        };
         render_lines(&["TIME IS UP!".to_owned()], Some(&status))
     }
 }
@@ -121,13 +135,17 @@ pub fn format_duration(duration: Duration) -> String {
     }
 }
 
-pub fn countdown_status(sound: &str, target: Option<&str>) -> String {
-    match target {
-        Some(target) => {
-            format!("Target: {target} | Sound: {sound} | q/Esc/Ctrl+C to cancel")
-        }
-        None => format!("Sound: {sound} | q/Esc/Ctrl+C to cancel"),
+pub fn countdown_status(sound: &str, target: Option<&str>, title: Option<&str>) -> String {
+    let mut parts = Vec::new();
+    if let Some(title) = title {
+        parts.push(format!("Title: {title}"));
     }
+    if let Some(target) = target {
+        parts.push(format!("Target: {target}"));
+    }
+    parts.push(format!("Sound: {sound}"));
+    parts.push("q/Esc/Ctrl+C to cancel".to_owned());
+    parts.join(" | ")
 }
 
 #[cfg(test)]
@@ -152,13 +170,21 @@ mod tests {
     }
 
     #[test]
-    fn countdown_status_includes_optional_target() {
+    fn countdown_status_includes_optional_target_and_title() {
         assert_eq!(
-            countdown_status("Glass", Some("2026-06-11 09:00 EDT")),
+            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), Some("Lunch")),
+            "Title: Lunch | Target: 2026-06-11 09:00 EDT | Sound: Glass | q/Esc/Ctrl+C to cancel"
+        );
+        assert_eq!(
+            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), None),
             "Target: 2026-06-11 09:00 EDT | Sound: Glass | q/Esc/Ctrl+C to cancel"
         );
         assert_eq!(
-            countdown_status("Glass", None),
+            countdown_status("Glass", None, Some("Lunch")),
+            "Title: Lunch | Sound: Glass | q/Esc/Ctrl+C to cancel"
+        );
+        assert_eq!(
+            countdown_status("Glass", None, None),
             "Sound: Glass | q/Esc/Ctrl+C to cancel"
         );
     }
