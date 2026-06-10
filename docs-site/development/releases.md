@@ -39,13 +39,25 @@ Every release also contains `SHA256SUMS`.
 
 ## Manual Rebuild
 
-Rebuild an existing valid tag without calculating a new version:
+The Release workflow's `workflow_dispatch` trigger rebuilds an existing valid
+tag without calculating a new version:
 
 ```bash
 gh workflow run Release --ref master -f tag=vX.Y.Z
 ```
 
 Existing assets with matching names are replaced.
+
+## Repository Settings
+
+The Release workflow requests `contents: write` permission so `GITHUB_TOKEN`
+can push tags and publish releases. No external secrets are required.
+
+## Release Verification
+
+After publishing, open the
+[latest release](https://github.com/gkk-dev-ops/clck/releases/latest) and
+confirm all five archives and `SHA256SUMS` are present.
 
 ## Failure Recovery
 
