@@ -1,11 +1,14 @@
 use anyhow::{bail, Context, Result};
+#[cfg(feature = "native-audio")]
 use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink, Source};
 use std::{
     collections::BTreeMap,
     fs,
     path::{Path, PathBuf},
-    process::Command,
 };
+#[cfg(feature = "native-audio")]
+use std::process::Command;
+#[cfg(feature = "native-audio")]
 use tempfile::NamedTempFile;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -109,12 +112,14 @@ pub fn resolve_custom_sound(path: &Path) -> Result<ResolvedSound> {
     })
 }
 
+#[cfg(feature = "native-audio")]
 pub struct AlarmPlayer {
     _stream: Option<OutputStream>,
     sink: Option<Sink>,
     _converted: Option<NamedTempFile>,
 }
 
+#[cfg(feature = "native-audio")]
 impl AlarmPlayer {
     pub fn start(sound: &ResolvedSound) -> Result<Self> {
         match sound {
@@ -168,11 +173,27 @@ impl AlarmPlayer {
     }
 }
 
+#[cfg(feature = "native-audio")]
 impl Drop for AlarmPlayer {
     fn drop(&mut self) {
         if let Some(sink) = &self.sink {
             sink.stop();
         }
+    }
+}
+
+#[cfg(not(feature = "native-audio"))]
+pub struct AlarmPlayer;
+
+#[cfg(not(feature = "native-audio"))]
+impl AlarmPlayer {
+    pub fn start(_sound: &ResolvedSound) -> Result<Self> {
+        print!("\x07");
+        Ok(Self)
+    }
+
+    pub fn bell(&self) {
+        print!("\x07");
     }
 }
 

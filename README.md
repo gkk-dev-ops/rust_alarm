@@ -4,86 +4,6 @@ A responsive cross-platform countdown alarm for the terminal.
 
 Officially supported on macOS and Linux. Windows support is best-effort.
 
-## Download
-
-Download the latest prebuilt release:
-
-https://github.com/gkk-dev-ops/rust_alarm/releases/latest
-
-| Platform | Architecture | Artifact |
-| --- | --- | --- |
-| macOS | Apple Silicon | `alarm-clock-vX.Y.Z-macos-aarch64.tar.gz` |
-| macOS | Intel | `alarm-clock-vX.Y.Z-macos-x86_64.tar.gz` |
-| Linux | ARM64 musl | `alarm-clock-vX.Y.Z-linux-aarch64-musl.tar.gz` |
-| Linux | x86_64 musl | `alarm-clock-vX.Y.Z-linux-x86_64-musl.tar.gz` |
-| Windows | x86_64 | `alarm-clock-vX.Y.Z-windows-x86_64.zip` |
-
-Each release also includes `SHA256SUMS`.
-
-### macOS And Linux
-
-Download the archive for your platform, then extract and install it:
-
-```bash
-tar -xzf alarm-clock-vX.Y.Z-macos-aarch64.tar.gz
-chmod +x alarm-clock
-sudo install alarm-clock /usr/local/bin/alarm-clock
-alarm-clock --help
-```
-
-Use the corresponding Linux archive name on Linux. To update, download the
-latest archive and replace the installed executable.
-
-Downloaded macOS binaries are unsigned. Verify the checksum first. If
-Gatekeeper blocks the executable, remove the quarantine attribute:
-
-```bash
-xattr -d com.apple.quarantine /path/to/alarm-clock
-```
-
-### Windows
-
-Download and extract `alarm-clock-vX.Y.Z-windows-x86_64.zip`, then add the
-directory containing `alarm-clock.exe` to `PATH`. To update, replace the
-executable with the latest release.
-
-### Verify Checksums
-
-Download `SHA256SUMS` beside the archive. On macOS:
-
-```bash
-grep 'alarm-clock-vX.Y.Z-macos-aarch64.tar.gz' SHA256SUMS |
-  shasum -a 256 -c -
-```
-
-On Linux:
-
-```bash
-grep 'alarm-clock-vX.Y.Z-linux-x86_64-musl.tar.gz' SHA256SUMS |
-  sha256sum -c -
-```
-
-On Windows PowerShell, compare this output with the corresponding
-`SHA256SUMS` entry:
-
-```powershell
-Get-FileHash .\alarm-clock-vX.Y.Z-windows-x86_64.zip -Algorithm SHA256
-```
-
-## Install With Cargo
-
-Install directly from the Git repository:
-
-```bash
-cargo install --git https://github.com/gkk-dev-ops/rust_alarm.git --locked
-```
-
-Update a Cargo installation with:
-
-```bash
-cargo install --git https://github.com/gkk-dev-ops/rust_alarm.git --locked --force
-```
-
 ## Usage
 
 Pass the countdown duration directly:
@@ -149,6 +69,3 @@ cargo build --release
 ```
 
 See [docs/manual-testing.md](docs/manual-testing.md) for platform smoke tests.
-
-Maintainers: see [docs/releases.md](docs/releases.md) for CI, versioning, and
-release operations.

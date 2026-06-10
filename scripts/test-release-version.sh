@@ -54,12 +54,13 @@ grep -Fq 'actions/upload-artifact@v4' "$release"
 grep -Fq 'actions/download-artifact@v4' "$release"
 grep -Fq 'SHA256SUMS' "$release"
 grep -Fq 'gh release upload' "$release"
+grep -Fq 'args: --locked --release --no-default-features' "$release"
 
 readme="$root/README.md"
-grep -Fq 'https://github.com/gkk-dev-ops/rust_alarm/releases/latest' "$readme"
-grep -Fq 'SHA256SUMS' "$readme"
-grep -Fq 'xattr -d com.apple.quarantine' "$readme"
-grep -Fq 'docs/releases.md' "$readme"
+if grep -Fq 'https://github.com/gkk-dev-ops/rust_alarm/releases/latest' "$readme"; then
+  echo "README should not contain release installation instructions" >&2
+  exit 1
+fi
 
 releases="$root/docs/releases.md"
 test -f "$releases"

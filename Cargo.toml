@@ -5,6 +5,10 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["native-audio"]
+native-audio = ["dep:rodio"]
+
 [dependencies]
 anyhow = "1"
 chrono = { version = "0.4", features = ["clock"] }
@@ -17,7 +21,7 @@ iana-time-zone = "0.1"
 inquire = "0.9"
 notify-rust = "4"
 regex = "1"
-rodio = { version = "0.21", features = ["playback", "symphonia-all"] }
+rodio = { version = "0.21", features = ["playback", "symphonia-all"], optional = true }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 tempfile = "3"
