@@ -57,10 +57,13 @@ jobs:
           echo "$result" >> "$GITHUB_OUTPUT"
           grep -qx 'skip=true' <<< "$result" && exit 0
           tag=$(sed -n 's/^tag=//p' <<< "$result")
+          scripts/set-release-version.sh "$tag"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "$tag" "$HEAD_SHA"
-          git push origin "$tag"
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore: release $tag [skip release]"
+          git tag "$tag" HEAD
+          git push --atomic origin HEAD:master "$tag"
 
   build:
     needs: prepare

@@ -12,10 +12,11 @@ After CI succeeds for a push to `master`, the serialized `Release` workflow:
 
 1. Reads the head commit message.
 2. Skips tagging when the message contains `[skip release]`.
-3. Calculates and pushes the next semantic version tag.
-4. Builds all supported targets.
-5. Packages executables and generates `SHA256SUMS`.
-6. Creates the GitHub Release after all builds succeed.
+3. Calculates the next semantic version.
+4. Updates `Cargo.toml` and `Cargo.lock`, then commits and tags that version.
+5. Builds all supported targets.
+6. Packages executables and generates `SHA256SUMS`.
+7. Creates the GitHub Release after all builds succeed.
 
 ## Version Rules
 
@@ -24,6 +25,7 @@ After CI succeeds for a push to `master`, the serialized `Release` workflow:
 - `feat:` and `feat(scope):` increment the minor version.
 - Every other commit increments the patch version.
 - If no release tag exists, calculation starts from `v0.1.0`.
+- The version in `Cargo.toml` and `Cargo.lock` matches the release tag.
 
 ## Artifacts
 

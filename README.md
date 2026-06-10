@@ -35,6 +35,7 @@ After either installation method, the command is `clck`.
 Pass the countdown duration directly:
 
 ```bash
+clck 45
 clck 45s
 clck 10m
 clck 1h30m
@@ -42,8 +43,8 @@ clck 01:30:00
 clck --help
 ```
 
-Compact durations such as `1H30` mean one hour and thirty minutes. Duration
-units are case-insensitive.
+Numbers without a unit are seconds. Compact durations such as `1H30` mean one
+hour and thirty minutes. Duration units are case-insensitive.
 
 Running `clck` without a duration opens guided interactive setup. Interactive
 font, sound, and notification choices can be saved as defaults.

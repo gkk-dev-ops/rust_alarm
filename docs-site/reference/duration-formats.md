@@ -2,6 +2,14 @@
 
 Durations are case-insensitive and must be valid and nonzero.
 
+## Seconds
+
+A number without a unit is interpreted as seconds:
+
+```text
+45
+```
+
 ## Unit Durations
 
 Combine hours, minutes, and seconds:

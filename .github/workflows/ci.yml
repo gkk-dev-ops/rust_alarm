@@ -34,6 +34,7 @@ jobs:
       - name: Test release tooling
         run: |
           bash scripts/test-release-version.sh
+          bash scripts/test-set-release-version.sh
           bash scripts/test-package-release.sh
           bash -n scripts/*.sh
       - run: cargo fmt --check

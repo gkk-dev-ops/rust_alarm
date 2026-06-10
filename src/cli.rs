@@ -20,7 +20,10 @@ use thiserror::Error;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Command>,
-    #[arg(value_name = "DURATION", help = "Examples: 45s, 1h30m, 1H30, 01:30:00")]
+    #[arg(
+        value_name = "DURATION",
+        help = "Examples: 45, 45s, 1h30m, 1H30, 01:30:00"
+    )]
     pub duration: Option<String>,
     #[arg(long, global = true)]
     pub sound: Option<PathBuf>,
@@ -204,7 +207,7 @@ impl InteractiveAnswers {
 }
 
 pub fn prompt_for_alarm(config: &Config) -> Result<ValidatedInteractiveAnswers> {
-    let duration = Text::new("Duration (for example 1H30, 10m, or 45s):")
+    let duration = Text::new("Duration (for example 45, 1H30, 10m, or 45s):")
         .prompt()
         .context("interactive duration prompt was cancelled")?;
     let fonts: Vec<_> = FontCatalog::default().names().map(str::to_owned).collect();
@@ -239,20 +242,25 @@ pub fn prompt_for_alarm(config: &Config) -> Result<ValidatedInteractiveAnswers> 
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
-#[error("invalid duration `{input}`; use formats such as 45s, 1h30m, 1H30, or 01:30:00")]
+#[error("invalid duration `{input}`; use formats such as 45, 45s, 1h30m, 1H30, or 01:30:00")]
 pub struct DurationParseError {
     input: String,
 }
 
 pub fn parse_duration(input: &str) -> Result<Duration, DurationParseError> {
     let input = input.trim();
-    parse_colon(input)
+    parse_seconds(input)
+        .or_else(|| parse_colon(input))
         .or_else(|| parse_units(input))
         .or_else(|| parse_compact_hours(input))
         .filter(|duration| !duration.is_zero())
         .ok_or_else(|| DurationParseError {
             input: input.to_owned(),
         })
+}
+
+fn parse_seconds(input: &str) -> Option<Duration> {
+    input.parse::<u64>().ok().map(Duration::from_secs)
 }
 
 fn parse_colon(input: &str) -> Option<Duration> {
@@ -318,6 +326,7 @@ mod tests {
 
     #[test]
     fn parses_supported_duration_formats() {
+        assert_eq!(parse_duration("12").unwrap(), Duration::from_secs(12));
         assert_eq!(parse_duration("45s").unwrap(), Duration::from_secs(45));
         assert_eq!(parse_duration("10m").unwrap(), Duration::from_secs(600));
         assert_eq!(parse_duration("1h30m").unwrap(), Duration::from_secs(5_400));
