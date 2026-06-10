@@ -21,6 +21,7 @@ Run on macOS and Linux:
 cargo run -- 5s
 cargo run -- 1H30
 cargo run -- 2s --sound /path/to/test.mp3
+cargo run -- 2s --title "Resuming"
 cargo run -- 2s --sound /path/to/test.mp4
 cargo run
 cargo run -- fonts

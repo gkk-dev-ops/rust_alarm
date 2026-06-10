@@ -20,6 +20,7 @@ Global options work with countdowns and scheduling commands:
 
 | Option | Purpose |
 | --- | --- |
+| `--title, -t <STRING>` | Give the timer a title/label |
 | `--sound <PATH>` | Use a custom sound or media file |
 | `--font <NAME>` | Prefer a bundled ASCII font |
 | `--no-notification` | Disable the desktop notification |

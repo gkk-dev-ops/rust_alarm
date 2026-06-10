@@ -47,11 +47,13 @@ Numbers without a unit are seconds. Compact durations such as `1H30` mean one
 hour and thirty minutes. Duration units are case-insensitive.
 
 Running `clck` without a duration opens guided interactive setup. Interactive
-font, sound, and notification choices can be saved as defaults.
+title, font, sound, and notification choices can be saved as defaults.
 
 ## Options
 
 ```bash
+clck 5m --title "Pizza"
+clck 5m -t "Pizza"
 clck 5m --sound ~/Music/alarm.mp3
 clck 5m --sound ~/Movies/alarm.mp4
 clck 5m --font banner

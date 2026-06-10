@@ -23,14 +23,15 @@ Run `clck` without a duration to open guided setup:
 clck
 ```
 
-The prompts collect a duration, font, alarm sound, and notification preference.
-You can save those choices as defaults.
+The prompts collect a duration, optional title, font, alarm sound, and notification
+preference. You can save those choices as defaults.
 
 ## Countdown and Alarm
 
-During a countdown, `q`, `Esc`, or `Ctrl+C` cancels and restores the terminal.
-When time expires, the sound loops and a desktop notification is sent when
-notifications are enabled. Press any key to dismiss the alarm.
+During a countdown, your title is displayed in the status line if provided.
+`q`, `Esc`, or `Ctrl+C` cancels and restores the terminal.
+When time expires, the sound loops, the title is displayed on the screen,
+and a desktop notification is sent. Press any key to dismiss the alarm.
 
 The terminal mode and cursor visibility are restored after normal exit,
 cancellation, dismissal, and errors.
