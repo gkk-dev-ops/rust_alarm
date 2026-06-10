@@ -94,7 +94,7 @@ cargo check --target x86_64-pc-windows-gnu
 
 After the first automatic release:
 
-1. Open `https://github.com/gkk-dev-ops/rust_alarm/releases/latest`.
+1. Open `https://github.com/gkk-dev-ops/clck/releases/latest`.
 2. Confirm all five archives and `SHA256SUMS` are present.
 3. Download the current macOS archive and `SHA256SUMS`.
 4. Filter its entry from `SHA256SUMS` and verify it with

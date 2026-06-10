@@ -17,7 +17,7 @@ not automatically tested, tagged, packaged, or published.
 
 The GitHub repository is:
 
-`https://github.com/gkk-dev-ops/rust_alarm`
+`https://github.com/gkk-dev-ops/clck`
 
 ## Release Trigger And Versioning
 
@@ -169,7 +169,7 @@ The README will add:
 
 The latest-release URL is:
 
-`https://github.com/gkk-dev-ops/rust_alarm/releases/latest`
+`https://github.com/gkk-dev-ops/clck/releases/latest`
 
 ### Maintainer Release Documentation
 

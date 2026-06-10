@@ -599,7 +599,7 @@ Add to `scripts/test-release-version.sh`:
 
 ```bash
 readme="$root/README.md"
-grep -Fq 'https://github.com/gkk-dev-ops/rust_alarm/releases/latest' "$readme"
+grep -Fq 'https://github.com/gkk-dev-ops/clck/releases/latest' "$readme"
 grep -Fq 'SHA256SUMS' "$readme"
 grep -Fq 'xattr -d com.apple.quarantine' "$readme"
 grep -Fq 'docs/releases.md' "$readme"
@@ -620,7 +620,7 @@ Update `README.md` with these sections and exact artifact mappings:
 
 Download the latest prebuilt release:
 
-https://github.com/gkk-dev-ops/rust_alarm/releases/latest
+https://github.com/gkk-dev-ops/clck/releases/latest
 
 | Platform | Architecture | Artifact |
 | --- | --- | --- |
@@ -635,7 +635,7 @@ Document:
 
 - macOS/Linux download, extraction, `chmod +x`, and installation into a directory on `PATH`.
 - Windows ZIP extraction and adding the chosen directory to `PATH`.
-- Cargo source installation with `cargo install --git https://github.com/gkk-dev-ops/rust_alarm.git --locked`.
+- Cargo source installation with `cargo install --git https://github.com/gkk-dev-ops/clck.git --locked`.
 - Updating by downloading/replacing the binary or rerunning Cargo install with `--force`.
 - `shasum -a 256 -c SHA256SUMS` on macOS and `sha256sum -c SHA256SUMS` on Linux.
 - Windows checksum verification with `Get-FileHash -Algorithm SHA256`.
@@ -714,7 +714,7 @@ Append to `docs/manual-testing.md`:
 
 After the first automatic release:
 
-1. Open `https://github.com/gkk-dev-ops/rust_alarm/releases/latest`.
+1. Open `https://github.com/gkk-dev-ops/clck/releases/latest`.
 2. Confirm all five archives and `SHA256SUMS` are present.
 3. Download the current macOS archive and `SHA256SUMS`.
 4. Verify the archive checksum with `shasum -a 256 -c SHA256SUMS`.

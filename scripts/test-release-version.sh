@@ -57,7 +57,7 @@ grep -Fq 'gh release upload' "$release"
 grep -Fq 'args: --locked --release --no-default-features' "$release"
 
 readme="$root/README.md"
-if grep -Fq 'https://github.com/gkk-dev-ops/rust_alarm/releases/latest' "$readme"; then
+if grep -Fq 'https://github.com/gkk-dev-ops/clck/releases/latest' "$readme"; then
   echo "README should not contain release installation instructions" >&2
   exit 1
 fi
