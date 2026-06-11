@@ -30,22 +30,27 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
     ctrlc::set_handler(move || signal.store(true, Ordering::SeqCst))?;
 
     let terminal = TerminalSession::enter()?;
-    let timer = Countdown::new(Instant::now(), request.duration);
+    let mut timer = Countdown::new(Instant::now(), request.duration);
     let mut displayed_second = None;
+    let mut last_paused = false;
     loop {
-        let remaining = timer.remaining(Instant::now());
+        let now = Instant::now();
+        let remaining = timer.remaining(now);
+        let paused = timer.is_paused();
         let current_second = remaining.as_secs() + u64::from(remaining.subsec_nanos() > 0);
-        if displayed_second != Some(current_second) {
+        if displayed_second != Some(current_second) || paused != last_paused {
             terminal.render_countdown(
                 remaining,
                 &request.font,
                 &request.sound_name,
                 request.target.as_deref(),
                 request.title.as_deref(),
+                paused,
             )?;
             displayed_second = Some(current_second);
+            last_paused = paused;
         }
-        if timer.is_finished(Instant::now()) {
+        if !paused && timer.is_finished(Instant::now()) {
             break;
         }
         if cancelled.load(Ordering::SeqCst) {
@@ -54,6 +59,15 @@ pub fn run_alarm(request: AlarmRequest) -> Result<()> {
         match TerminalSession::next_event(Duration::from_millis(100), false)? {
             DisplayEvent::Cancel => return Ok(()),
             DisplayEvent::Resize => displayed_second = None,
+            DisplayEvent::TogglePause => {
+                let now = Instant::now();
+                if timer.is_paused() {
+                    timer.resume(now);
+                } else {
+                    timer.pause(now);
+                }
+                displayed_second = None;
+            }
             _ => {}
         }
     }
