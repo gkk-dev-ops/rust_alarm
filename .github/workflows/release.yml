@@ -164,19 +164,12 @@ jobs:
           else
             gh release create "$TAG" dist/* --verify-tag --generate-notes --title "$TAG"
           fi
-
-  cargo-publish:
-    needs: [prepare, publish]
-    if: needs.prepare.outputs.skip == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.prepare.outputs.tag }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          key: cargo-publish
+          key: publish
+      - name: Install Linux audio build dependencies
+        run: sudo apt-get update && sudo apt-get install --yes libasound2-dev pkg-config
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
