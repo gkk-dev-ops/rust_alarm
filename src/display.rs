@@ -21,6 +21,7 @@ pub enum DisplayEvent {
     Cancel,
     Dismiss,
     Resize,
+    TogglePause,
 }
 
 pub fn event_from_key(key: KeyEvent, ringing: bool) -> DisplayEvent {
@@ -30,6 +31,7 @@ pub fn event_from_key(key: KeyEvent, ringing: bool) -> DisplayEvent {
     match key.code {
         KeyCode::Char('q') | KeyCode::Esc => DisplayEvent::Cancel,
         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => DisplayEvent::Cancel,
+        KeyCode::Char(' ') => DisplayEvent::TogglePause,
         _ => DisplayEvent::None,
     }
 }
@@ -61,6 +63,7 @@ impl TerminalSession {
         sound: &str,
         target: Option<&str>,
         title: Option<&str>,
+        paused: bool,
     ) -> Result<()> {
         let (width, height) = terminal::size()?;
         let text = format_duration(remaining);
@@ -71,10 +74,10 @@ impl TerminalSession {
             .map(|font| font.render(&text))
             .unwrap_or_else(|| vec![text]);
 
-        let full_status = countdown_status(sound, target, title);
-        let title_status = countdown_status(sound, None, title);
-        let target_status = countdown_status(sound, target, None);
-        let compact_status = countdown_status(sound, None, None);
+        let full_status = countdown_status(sound, target, title, paused);
+        let title_status = countdown_status(sound, None, title, paused);
+        let target_status = countdown_status(sound, target, None, paused);
+        let compact_status = countdown_status(sound, None, None, paused);
 
         let status = if full_status.chars().count() <= usize::from(width) {
             Some(full_status)
@@ -135,7 +138,12 @@ pub fn format_duration(duration: Duration) -> String {
     }
 }
 
-pub fn countdown_status(sound: &str, target: Option<&str>, title: Option<&str>) -> String {
+pub fn countdown_status(
+    sound: &str,
+    target: Option<&str>,
+    title: Option<&str>,
+    paused: bool,
+) -> String {
     let mut parts = Vec::new();
     if let Some(title) = title {
         parts.push(format!("Title: {title}"));
@@ -144,7 +152,11 @@ pub fn countdown_status(sound: &str, target: Option<&str>, title: Option<&str>) 
         parts.push(format!("Target: {target}"));
     }
     parts.push(format!("Sound: {sound}"));
-    parts.push("q/Esc/Ctrl+C to cancel".to_owned());
+    if paused {
+        parts.push("PAUSED | Space to resume | q/Esc/Ctrl+C to cancel".to_owned());
+    } else {
+        parts.push("Space to pause | q/Esc/Ctrl+C to cancel".to_owned());
+    }
     parts.join(" | ")
 }
 
@@ -167,25 +179,33 @@ mod tests {
             event_from_key(KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE), true),
             DisplayEvent::Dismiss
         );
+        assert_eq!(
+            event_from_key(KeyEvent::new(KeyCode::Char(' '), KeyModifiers::NONE), false),
+            DisplayEvent::TogglePause
+        );
     }
 
     #[test]
     fn countdown_status_includes_optional_target_and_title() {
         assert_eq!(
-            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), Some("Lunch")),
-            "Title: Lunch | Target: 2026-06-11 09:00 EDT | Sound: Glass | q/Esc/Ctrl+C to cancel"
+            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), Some("Lunch"), false),
+            "Title: Lunch | Target: 2026-06-11 09:00 EDT | Sound: Glass | Space to pause | q/Esc/Ctrl+C to cancel"
         );
         assert_eq!(
-            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), None),
-            "Target: 2026-06-11 09:00 EDT | Sound: Glass | q/Esc/Ctrl+C to cancel"
+            countdown_status("Glass", Some("2026-06-11 09:00 EDT"), None, false),
+            "Target: 2026-06-11 09:00 EDT | Sound: Glass | Space to pause | q/Esc/Ctrl+C to cancel"
         );
         assert_eq!(
-            countdown_status("Glass", None, Some("Lunch")),
-            "Title: Lunch | Sound: Glass | q/Esc/Ctrl+C to cancel"
+            countdown_status("Glass", None, Some("Lunch"), false),
+            "Title: Lunch | Sound: Glass | Space to pause | q/Esc/Ctrl+C to cancel"
         );
         assert_eq!(
-            countdown_status("Glass", None, None),
-            "Sound: Glass | q/Esc/Ctrl+C to cancel"
+            countdown_status("Glass", None, None, false),
+            "Sound: Glass | Space to pause | q/Esc/Ctrl+C to cancel"
+        );
+        assert_eq!(
+            countdown_status("Glass", None, None, true),
+            "Sound: Glass | PAUSED | Space to resume | q/Esc/Ctrl+C to cancel"
         );
     }
 }
