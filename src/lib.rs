@@ -106,10 +106,12 @@ fn run_direct_schedule(
         );
     };
 
+    let mut had_error = false;
     let candidate = loop {
         match schedule::parse_direct(&expression) {
             Ok(candidate) => break candidate,
             Err(error) => {
+                had_error = true;
                 writeln!(terminal.writer, "{error}")?;
                 write!(terminal.writer, "Enter another date and time: ")?;
                 terminal.writer.flush()?;
@@ -120,8 +122,16 @@ fn run_direct_schedule(
             }
         }
     };
-    if !cli::confirm_candidate(&candidate, &mut terminal.reader, &mut terminal.writer)? {
-        return Ok(());
+    if had_error {
+        if !cli::confirm_candidate(&candidate, &mut terminal.reader, &mut terminal.writer)? {
+            return Ok(());
+        }
+    } else {
+        writeln!(
+            terminal.writer,
+            "Starting alarm for {}.",
+            candidate.display_target()
+        )?;
     }
     drop(terminal);
     start_scheduled_alarm(candidate, effective, title)
@@ -144,9 +154,7 @@ fn run_text_schedule(effective: Config, title: Option<String>) -> Result<()> {
             }
             let selected = cli::select_candidate(&candidates, &mut reader, &mut writer)?;
             let candidate = candidates[selected].clone();
-            if !cli::confirm_candidate(&candidate, &mut reader, &mut writer)? {
-                return Ok(());
-            }
+            writeln!(writer, "Starting alarm for {}.", candidate.display_target())?;
             return start_scheduled_alarm(candidate, effective, title);
         }
     }
@@ -171,9 +179,11 @@ fn run_text_schedule(effective: Config, title: Option<String>) -> Result<()> {
     };
     let selected = cli::select_candidate(&candidates, &mut terminal.reader, &mut terminal.writer)?;
     let candidate = candidates[selected].clone();
-    if !cli::confirm_candidate(&candidate, &mut terminal.reader, &mut terminal.writer)? {
-        return Ok(());
-    }
+    writeln!(
+        terminal.writer,
+        "Starting alarm for {}.",
+        candidate.display_target()
+    )?;
     drop(terminal);
     start_scheduled_alarm(candidate, effective, title)
 }

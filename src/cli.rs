@@ -231,7 +231,18 @@ pub fn prompt_for_alarm(config: &Config) -> Result<ValidatedInteractiveAnswers> 
     let sound = if sound_names.is_empty() {
         SoundSetting::TerminalBell
     } else {
-        SoundSetting::System(Select::new("Alarm sound:", sound_names).prompt()?)
+        let default_sound = match &config.sound {
+            SoundSetting::System(saved) => sound_names
+                .iter()
+                .position(|name| name.eq_ignore_ascii_case(saved))
+                .unwrap_or(0),
+            _ => 0,
+        };
+        SoundSetting::System(
+            Select::new("Alarm sound:", sound_names)
+                .with_starting_cursor(default_sound)
+                .prompt()?,
+        )
     };
     let notification = Confirm::new("Show desktop notification?")
         .with_default(config.notification)

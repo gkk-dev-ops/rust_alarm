@@ -8,6 +8,21 @@ pub fn notification_body(target: Option<&str>, title: Option<&str>) -> String {
     }
 }
 
+#[cfg(target_os = "macos")]
+pub fn notify_time_up(target: Option<&str>, title: Option<&str>) -> Result<()> {
+    let body = notification_body(target, title);
+    // Escape for AppleScript double-quoted string
+    let escaped = body.replace('\\', "\\\\").replace('"', "\\\"");
+    let script = format!("display notification \"{escaped}\" with title \"Alarm clock\"");
+    // osascript goes through the Automation subsystem, which is reliably
+    // allowed to post notifications from CLI tools without a bundle identity.
+    let _ = std::process::Command::new("osascript")
+        .args(["-e", &script])
+        .status();
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
 pub fn notify_time_up(target: Option<&str>, title: Option<&str>) -> Result<()> {
     notify_rust::Notification::new()
         .summary("Alarm clock")
